@@ -7,12 +7,10 @@ import time
 app = Flask(__name__)
 CORS(app)
 
-# Serve static files from root
-@app.route('/<path:filename>')
-def serve_static(filename):
-    if filename == 'style.css':
-        return send_from_directory('.', 'style.css')
-    return send_from_directory('templates', filename)
+# Serve static files
+@app.route('/style.css')
+def serve_css():
+    return send_from_directory('.', 'style.css')
 
 # Serve main page
 @app.route('/')
@@ -272,7 +270,7 @@ You can ask me about:
 
 What would you like to know about?"""
 
-# Initialize assistant
+# Initialize assistant - THIS MUST BE AFTER THE CLASS DEFINITION
 assistant = HybridGazaAssistant()
 
 @app.route('/chat', methods=['POST'])
@@ -301,6 +299,15 @@ def chat():
 @app.route('/health')
 def health():
     return jsonify({"status": "healthy"})
+
+# Error handlers for better debugging
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({"error": "Internal server error", "message": str(error)}), 500
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({"error": "Not found"}), 404
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 7860))
